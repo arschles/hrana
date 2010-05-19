@@ -10,8 +10,9 @@ Uses
 
 hrana aims to be a simple edge cache. The major goals of hrana are:
 
-* to move relatively small amounts of data close to where its needed
-* to keep the aforementioned data up to date
+* to move relatively small amounts of data close to where its needed (ie: configuration data to a webserver, etc...)
+* to keep the aforementioned data relatively up to date
+* to fan data out to thousands of machines
 
 Following are the intended high level features of hrana. Almost none of these are currently implemented:
 
