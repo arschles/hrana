@@ -25,6 +25,6 @@ Following are the intended high level features of hrana. Almost none of these ar
 
 Following are the anti-features of hrana:
 
-* massive data replication (ie: cross colo)
+* replication of massive amounts of data (ie: cross colo database replication) *per daemon* (ie: one hrana daemon will not be designed to move GB of data)
 * distributed transactions for data updates
 * immediate consistency across multiple hrana daemons
