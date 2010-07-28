@@ -3,12 +3,12 @@ hrana
 
 Status
 ---
-This is a planning document only. Hrana is still a work in progress, and certainly is not ready for any use.
+Hrana is still a work in progress. It currently support (but is not tested with) the local file datasource, and nothing else. It is certainly not ready for production use!
 
-Uses
+Overview
 ---
 
-hrana aims to be a simple edge cache. The major goals of hrana are:
+Hrana aims to be a simple edge cache. The major goals of hrana are:
 
 * to move relatively small amounts of data close to where its needed (ie: configuration data to a webserver, etc...)
 * to keep the aforementioned data relatively up to date
