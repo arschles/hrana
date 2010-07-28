@@ -44,7 +44,6 @@ object Server
             val refresh_frequency = 1000
             val fetcher = new Fetcher(data_source, refresh_frequency)
             fetcher.start
-            
             val impl = new ServerImpl(fetcher)
             val processor = new Hrana.Processor(impl)
             val protFactory = new TBinaryProtocol.Factory(true, true)

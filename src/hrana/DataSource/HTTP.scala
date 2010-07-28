@@ -1,4 +1,3 @@
-import hrana.DataSource
 import scala.collection.immutable.HashMap
 
 class HTTPDS(h: Host) extends DataSource

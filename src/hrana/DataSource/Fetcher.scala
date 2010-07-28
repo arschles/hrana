@@ -30,11 +30,10 @@ class Fetcher(source : DataSource, interval : Long) extends Actor
                 last_fetched = source.GetAll
                 last_fetched_time = cur_time
             }
-            
             receive
             {
-                case Fetcher.Get => reply(last_fetched)
-                case Fetcher.Clear => last_fetched = new HashMap[String, String]
+                case Fetcher.Get() => reply(last_fetched)
+                case Fetcher.Clear() => last_fetched = new HashMap[String, String]
             }
         }
     }

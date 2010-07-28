@@ -28,3 +28,10 @@ Following are the anti-features of Hrana:
 * replication of massive amounts of data (ie: cross colo database replication) *per daemon* (ie: one Hrana daemon will not be designed to move GB of data)
 * distributed transactions for data updates
 * immediate consistency across multiple Hrana daemons
+
+Current TODOs (no particular order)
+---
+* implement the rest of the data sources
+* add a ZooKeeper data source
+* move build system to sbt
+* unit tests

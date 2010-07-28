@@ -44,7 +44,6 @@ class ServerImpl(f : Fetcher) extends Hrana.Iface
         val fetched = (f !? Fetcher.Get()).asInstanceOf[HashMap[String, String]]
         fetched.foreach { case (k: String, v: String) => m.put(k, v) }
         local.foreach { case (k: String, v: String) => m.put(k, v) }
-        
         m
     }
     
