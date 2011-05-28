@@ -1,5 +1,4 @@
-Hrana
-===
+# Hrana
 
 Hrana aims to be a simple edge cache. The major goals of Hrana are:
 
@@ -8,3 +7,7 @@ Hrana aims to be a simple edge cache. The major goals of Hrana are:
 * to fan data out to thousands of machines
 
 It provides a thrift interface and it's meant to run on the same machine as the code that will access it, for speed.
+
+# Building
+
+Building is done with the Scala build tool. Make sure you have sbt installed and run 'sbt' from the toplevel hrana directory

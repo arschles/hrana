@@ -5,5 +5,10 @@ import com.redis._
 
 class RedisDataSource(h: Host, key: String) extends DataSource
 {
-	def GetAll : Map[String, String] = new HashMap[String, String]
+	var redis_ = new RedisClient(h.hostname, h.port)
+	var key_ = key
+		
+	def GetAll : Map[String, String] = {
+		redis_.hgetall(key_).getOrElse(null)
+	}
 }
