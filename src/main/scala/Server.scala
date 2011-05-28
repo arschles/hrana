@@ -1,10 +1,9 @@
 package hrana
 
 import java.io.IOException;
-import org.apache.thrift.protocol.TBinaryProtocol
-import org.apache.thrift.protocol.TBinaryProtocol.Factory
-import org.apache.thrift.server.{TServer, TNonblockingServer}
-import org.apache.thrift.transport.{TNonblockingServerTransport, TNonblockingServerSocket, TTransportException}
+import org.apache.thrift.server.TNonblockingServer
+import org.apache.thrift.server.TNonblockingServer.Args;
+import org.apache.thrift.transport.{TNonblockingServerTransport, TNonblockingServerSocket}
 import hrana.thrift._
 import hrana.DataSource._
 import scala.actors.Actor
@@ -24,10 +23,10 @@ object LogActor extends Actor
         {
             react
             {
-                case s : String => println(s)
-                case Info(s) => println("> " + s)
-                case Warning(s) => println("WARNING> " + s)
-                case Error(s) => println("ERROR>> " + s)
+                case s : String => println("[hrana-info] "+ s)
+                case Info(s) => println("[hrana-info] " + s)
+                case Warning(s) => println("[hrana-warning] " + s)
+                case Error(s) => println("[hrana-error] " + s)
             }
         }
     }
@@ -40,17 +39,14 @@ object Server
     {
         try
         {
-            val serverTransport = new TNonblockingServerSocket(port)
+            val serverTransport:TNonblockingServerTransport = new TNonblockingServerSocket(port)
             
-            //TODO:add config
             val data_source = new NullDataSource
             val refresh_frequency = 1000
             val fetcher = new Fetcher(data_source, refresh_frequency)
             fetcher.start
-            val impl = new ServerImpl(fetcher)
-            val processor = new Hrana.Processor(impl)
-            val protFactory = new TBinaryProtocol.Factory(true, true)
-            val server = new TNonblockingServer(processor, serverTransport)
+            val processor = new Hrana.Processor(new ServerImpl(fetcher))
+            val server = new TNonblockingServer(new Args(serverTransport).processor(processor))
             LogActor ! "Hrana serving on port " + port
             server.serve()
         }

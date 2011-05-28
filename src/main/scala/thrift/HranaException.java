@@ -15,15 +15,18 @@ import java.util.HashSet;
 import java.util.EnumSet;
 import java.util.Collections;
 import java.util.BitSet;
+import java.nio.ByteBuffer;
 import java.util.Arrays;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import org.apache.thrift.*;
+import org.apache.thrift.async.*;
 import org.apache.thrift.meta_data.*;
+import org.apache.thrift.transport.*;
 import org.apache.thrift.protocol.*;
 
-public class HranaException extends Exception implements TBase<HranaException._Fields>, java.io.Serializable, Cloneable, Comparable<HranaException> {
+public class HranaException extends Exception implements TBase<HranaException, HranaException._Fields>, java.io.Serializable, Cloneable {
   private static final TStruct STRUCT_DESC = new TStruct("HranaException");
 
   private static final TField ERROR_CODE_FIELD_DESC = new TField("error_code", TType.I64, (short)1);
@@ -37,12 +40,10 @@ public class HranaException extends Exception implements TBase<HranaException._F
     ERROR_CODE((short)1, "error_code"),
     ERROR_STRING((short)2, "error_string");
 
-    private static final Map<Integer, _Fields> byId = new HashMap<Integer, _Fields>();
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
     static {
       for (_Fields field : EnumSet.allOf(_Fields.class)) {
-        byId.put((int)field._thriftId, field);
         byName.put(field.getFieldName(), field);
       }
     }
@@ -51,7 +52,14 @@ public class HranaException extends Exception implements TBase<HranaException._F
      * Find the _Fields constant that matches fieldId, or null if its not found.
      */
     public static _Fields findByThriftId(int fieldId) {
-      return byId.get(fieldId);
+      switch(fieldId) {
+        case 1: // ERROR_CODE
+          return ERROR_CODE;
+        case 2: // ERROR_STRING
+          return ERROR_STRING;
+        default:
+          return null;
+      }
     }
 
     /**
@@ -92,14 +100,14 @@ public class HranaException extends Exception implements TBase<HranaException._F
   private static final int __ERROR_CODE_ISSET_ID = 0;
   private BitSet __isset_bit_vector = new BitSet(1);
 
-  public static final Map<_Fields, FieldMetaData> metaDataMap = Collections.unmodifiableMap(new EnumMap<_Fields, FieldMetaData>(_Fields.class) {{
-    put(_Fields.ERROR_CODE, new FieldMetaData("error_code", TFieldRequirementType.DEFAULT, 
-        new FieldValueMetaData(TType.I64)));
-    put(_Fields.ERROR_STRING, new FieldMetaData("error_string", TFieldRequirementType.DEFAULT, 
-        new FieldValueMetaData(TType.STRING)));
-  }});
-
+  public static final Map<_Fields, FieldMetaData> metaDataMap;
   static {
+    Map<_Fields, FieldMetaData> tmpMap = new EnumMap<_Fields, FieldMetaData>(_Fields.class);
+    tmpMap.put(_Fields.ERROR_CODE, new FieldMetaData("error_code", TFieldRequirementType.DEFAULT, 
+        new FieldValueMetaData(TType.I64)));
+    tmpMap.put(_Fields.ERROR_STRING, new FieldMetaData("error_string", TFieldRequirementType.DEFAULT, 
+        new FieldValueMetaData(TType.STRING)));
+    metaDataMap = Collections.unmodifiableMap(tmpMap);
     FieldMetaData.addStructMetaDataMap(HranaException.class, metaDataMap);
   }
 
@@ -132,9 +140,11 @@ public class HranaException extends Exception implements TBase<HranaException._F
     return new HranaException(this);
   }
 
-  @Deprecated
-  public HranaException clone() {
-    return new HranaException(this);
+  @Override
+  public void clear() {
+    setError_codeIsSet(false);
+    this.error_code = 0;
+    this.error_string = null;
   }
 
   public long getError_code() {
@@ -205,10 +215,6 @@ public class HranaException extends Exception implements TBase<HranaException._F
     }
   }
 
-  public void setFieldValue(int fieldID, Object value) {
-    setFieldValue(_Fields.findByThriftIdOrThrow(fieldID), value);
-  }
-
   public Object getFieldValue(_Fields field) {
     switch (field) {
     case ERROR_CODE:
@@ -221,12 +227,12 @@ public class HranaException extends Exception implements TBase<HranaException._F
     throw new IllegalStateException();
   }
 
-  public Object getFieldValue(int fieldId) {
-    return getFieldValue(_Fields.findByThriftIdOrThrow(fieldId));
-  }
-
   /** Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise */
   public boolean isSet(_Fields field) {
+    if (field == null) {
+      throw new IllegalArgumentException();
+    }
+
     switch (field) {
     case ERROR_CODE:
       return isSetError_code();
@@ -234,10 +240,6 @@ public class HranaException extends Exception implements TBase<HranaException._F
       return isSetError_string();
     }
     throw new IllegalStateException();
-  }
-
-  public boolean isSet(int fieldID) {
-    return isSet(_Fields.findByThriftIdOrThrow(fieldID));
   }
 
   @Override
@@ -287,23 +289,31 @@ public class HranaException extends Exception implements TBase<HranaException._F
     int lastComparison = 0;
     HranaException typedOther = (HranaException)other;
 
-    lastComparison = Boolean.valueOf(isSetError_code()).compareTo(isSetError_code());
+    lastComparison = Boolean.valueOf(isSetError_code()).compareTo(typedOther.isSetError_code());
     if (lastComparison != 0) {
       return lastComparison;
     }
-    lastComparison = TBaseHelper.compareTo(error_code, typedOther.error_code);
+    if (isSetError_code()) {
+      lastComparison = TBaseHelper.compareTo(this.error_code, typedOther.error_code);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = Boolean.valueOf(isSetError_string()).compareTo(typedOther.isSetError_string());
     if (lastComparison != 0) {
       return lastComparison;
     }
-    lastComparison = Boolean.valueOf(isSetError_string()).compareTo(isSetError_string());
-    if (lastComparison != 0) {
-      return lastComparison;
-    }
-    lastComparison = TBaseHelper.compareTo(error_string, typedOther.error_string);
-    if (lastComparison != 0) {
-      return lastComparison;
+    if (isSetError_string()) {
+      lastComparison = TBaseHelper.compareTo(this.error_string, typedOther.error_string);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
     }
     return 0;
+  }
+
+  public _Fields fieldForId(int fieldId) {
+    return _Fields.findByThriftId(fieldId);
   }
 
   public void read(TProtocol iprot) throws TException {

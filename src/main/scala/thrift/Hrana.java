@@ -15,12 +15,15 @@ import java.util.HashSet;
 import java.util.EnumSet;
 import java.util.Collections;
 import java.util.BitSet;
+import java.nio.ByteBuffer;
 import java.util.Arrays;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import org.apache.thrift.*;
+import org.apache.thrift.async.*;
 import org.apache.thrift.meta_data.*;
+import org.apache.thrift.transport.*;
 import org.apache.thrift.protocol.*;
 
 public class Hrana {
@@ -41,7 +44,33 @@ public class Hrana {
 
   }
 
-  public static class Client implements Iface {
+  public interface AsyncIface {
+
+    public void Has(String key, AsyncMethodCallback<AsyncClient.Has_call> resultHandler) throws TException;
+
+    public void Get(String key, AsyncMethodCallback<AsyncClient.Get_call> resultHandler) throws TException;
+
+    public void GetAll(AsyncMethodCallback<AsyncClient.GetAll_call> resultHandler) throws TException;
+
+    public void Push(String key, String value, boolean overwrite, AsyncMethodCallback<AsyncClient.Push_call> resultHandler) throws TException;
+
+    public void PushBulkAsync(Map<String,String> vals, AsyncMethodCallback<AsyncClient.PushBulkAsync_call> resultHandler) throws TException;
+
+    public void Clear(AsyncMethodCallback<AsyncClient.Clear_call> resultHandler) throws TException;
+
+  }
+
+  public static class Client implements TServiceClient, Iface {
+    public static class Factory implements TServiceClientFactory<Client> {
+      public Factory() {}
+      public Client getClient(TProtocol prot) {
+        return new Client(prot);
+      }
+      public Client getClient(TProtocol iprot, TProtocol oprot) {
+        return new Client(iprot, oprot);
+      }
+    }
+
     public Client(TProtocol prot)
     {
       this(prot, prot);
@@ -76,9 +105,9 @@ public class Hrana {
 
     public void send_Has(String key) throws TException
     {
-      oprot_.writeMessageBegin(new TMessage("Has", TMessageType.CALL, seqid_));
+      oprot_.writeMessageBegin(new TMessage("Has", TMessageType.CALL, ++seqid_));
       Has_args args = new Has_args();
-      args.key = key;
+      args.setKey(key);
       args.write(oprot_);
       oprot_.writeMessageEnd();
       oprot_.getTransport().flush();
@@ -91,6 +120,9 @@ public class Hrana {
         TApplicationException x = TApplicationException.read(iprot_);
         iprot_.readMessageEnd();
         throw x;
+      }
+      if (msg.seqid != seqid_) {
+        throw new TApplicationException(TApplicationException.BAD_SEQUENCE_ID, "Has failed: out of sequence response");
       }
       Has_result result = new Has_result();
       result.read(iprot_);
@@ -109,9 +141,9 @@ public class Hrana {
 
     public void send_Get(String key) throws TException
     {
-      oprot_.writeMessageBegin(new TMessage("Get", TMessageType.CALL, seqid_));
+      oprot_.writeMessageBegin(new TMessage("Get", TMessageType.CALL, ++seqid_));
       Get_args args = new Get_args();
-      args.key = key;
+      args.setKey(key);
       args.write(oprot_);
       oprot_.writeMessageEnd();
       oprot_.getTransport().flush();
@@ -124,6 +156,9 @@ public class Hrana {
         TApplicationException x = TApplicationException.read(iprot_);
         iprot_.readMessageEnd();
         throw x;
+      }
+      if (msg.seqid != seqid_) {
+        throw new TApplicationException(TApplicationException.BAD_SEQUENCE_ID, "Get failed: out of sequence response");
       }
       Get_result result = new Get_result();
       result.read(iprot_);
@@ -145,7 +180,7 @@ public class Hrana {
 
     public void send_GetAll() throws TException
     {
-      oprot_.writeMessageBegin(new TMessage("GetAll", TMessageType.CALL, seqid_));
+      oprot_.writeMessageBegin(new TMessage("GetAll", TMessageType.CALL, ++seqid_));
       GetAll_args args = new GetAll_args();
       args.write(oprot_);
       oprot_.writeMessageEnd();
@@ -159,6 +194,9 @@ public class Hrana {
         TApplicationException x = TApplicationException.read(iprot_);
         iprot_.readMessageEnd();
         throw x;
+      }
+      if (msg.seqid != seqid_) {
+        throw new TApplicationException(TApplicationException.BAD_SEQUENCE_ID, "GetAll failed: out of sequence response");
       }
       GetAll_result result = new GetAll_result();
       result.read(iprot_);
@@ -177,11 +215,11 @@ public class Hrana {
 
     public void send_Push(String key, String value, boolean overwrite) throws TException
     {
-      oprot_.writeMessageBegin(new TMessage("Push", TMessageType.CALL, seqid_));
+      oprot_.writeMessageBegin(new TMessage("Push", TMessageType.CALL, ++seqid_));
       Push_args args = new Push_args();
-      args.key = key;
-      args.value = value;
-      args.overwrite = overwrite;
+      args.setKey(key);
+      args.setValue(value);
+      args.setOverwrite(overwrite);
       args.write(oprot_);
       oprot_.writeMessageEnd();
       oprot_.getTransport().flush();
@@ -194,6 +232,9 @@ public class Hrana {
         TApplicationException x = TApplicationException.read(iprot_);
         iprot_.readMessageEnd();
         throw x;
+      }
+      if (msg.seqid != seqid_) {
+        throw new TApplicationException(TApplicationException.BAD_SEQUENCE_ID, "Push failed: out of sequence response");
       }
       Push_result result = new Push_result();
       result.read(iprot_);
@@ -214,9 +255,9 @@ public class Hrana {
 
     public void send_PushBulkAsync(Map<String,String> vals) throws TException
     {
-      oprot_.writeMessageBegin(new TMessage("PushBulkAsync", TMessageType.CALL, seqid_));
+      oprot_.writeMessageBegin(new TMessage("PushBulkAsync", TMessageType.CALL, ++seqid_));
       PushBulkAsync_args args = new PushBulkAsync_args();
-      args.vals = vals;
+      args.setVals(vals);
       args.write(oprot_);
       oprot_.writeMessageEnd();
       oprot_.getTransport().flush();
@@ -230,7 +271,7 @@ public class Hrana {
 
     public void send_Clear() throws TException
     {
-      oprot_.writeMessageBegin(new TMessage("Clear", TMessageType.CALL, seqid_));
+      oprot_.writeMessageBegin(new TMessage("Clear", TMessageType.CALL, ++seqid_));
       Clear_args args = new Clear_args();
       args.write(oprot_);
       oprot_.writeMessageEnd();
@@ -245,6 +286,9 @@ public class Hrana {
         iprot_.readMessageEnd();
         throw x;
       }
+      if (msg.seqid != seqid_) {
+        throw new TApplicationException(TApplicationException.BAD_SEQUENCE_ID, "Clear failed: out of sequence response");
+      }
       Clear_result result = new Clear_result();
       result.read(iprot_);
       iprot_.readMessageEnd();
@@ -255,6 +299,210 @@ public class Hrana {
     }
 
   }
+  public static class AsyncClient extends TAsyncClient implements AsyncIface {
+    public static class Factory implements TAsyncClientFactory<AsyncClient> {
+      private TAsyncClientManager clientManager;
+      private TProtocolFactory protocolFactory;
+      public Factory(TAsyncClientManager clientManager, TProtocolFactory protocolFactory) {
+        this.clientManager = clientManager;
+        this.protocolFactory = protocolFactory;
+      }
+      public AsyncClient getAsyncClient(TNonblockingTransport transport) {
+        return new AsyncClient(protocolFactory, clientManager, transport);
+      }
+    }
+
+    public AsyncClient(TProtocolFactory protocolFactory, TAsyncClientManager clientManager, TNonblockingTransport transport) {
+      super(protocolFactory, clientManager, transport);
+    }
+
+    public void Has(String key, AsyncMethodCallback<Has_call> resultHandler) throws TException {
+      checkReady();
+      Has_call method_call = new Has_call(key, resultHandler, this, protocolFactory, transport);
+      manager.call(method_call);
+    }
+
+    public static class Has_call extends TAsyncMethodCall {
+      private String key;
+      public Has_call(String key, AsyncMethodCallback<Has_call> resultHandler, TAsyncClient client, TProtocolFactory protocolFactory, TNonblockingTransport transport) throws TException {
+        super(client, protocolFactory, transport, resultHandler, false);
+        this.key = key;
+      }
+
+      public void write_args(TProtocol prot) throws TException {
+        prot.writeMessageBegin(new TMessage("Has", TMessageType.CALL, 0));
+        Has_args args = new Has_args();
+        args.setKey(key);
+        args.write(prot);
+        prot.writeMessageEnd();
+      }
+
+      public boolean getResult() throws TException {
+        if (getState() != State.RESPONSE_READ) {
+          throw new IllegalStateException("Method call not finished!");
+        }
+        TMemoryInputTransport memoryTransport = new TMemoryInputTransport(getFrameBuffer().array());
+        TProtocol prot = client.getProtocolFactory().getProtocol(memoryTransport);
+        return (new Client(prot)).recv_Has();
+      }
+    }
+
+    public void Get(String key, AsyncMethodCallback<Get_call> resultHandler) throws TException {
+      checkReady();
+      Get_call method_call = new Get_call(key, resultHandler, this, protocolFactory, transport);
+      manager.call(method_call);
+    }
+
+    public static class Get_call extends TAsyncMethodCall {
+      private String key;
+      public Get_call(String key, AsyncMethodCallback<Get_call> resultHandler, TAsyncClient client, TProtocolFactory protocolFactory, TNonblockingTransport transport) throws TException {
+        super(client, protocolFactory, transport, resultHandler, false);
+        this.key = key;
+      }
+
+      public void write_args(TProtocol prot) throws TException {
+        prot.writeMessageBegin(new TMessage("Get", TMessageType.CALL, 0));
+        Get_args args = new Get_args();
+        args.setKey(key);
+        args.write(prot);
+        prot.writeMessageEnd();
+      }
+
+      public String getResult() throws HranaException, TException {
+        if (getState() != State.RESPONSE_READ) {
+          throw new IllegalStateException("Method call not finished!");
+        }
+        TMemoryInputTransport memoryTransport = new TMemoryInputTransport(getFrameBuffer().array());
+        TProtocol prot = client.getProtocolFactory().getProtocol(memoryTransport);
+        return (new Client(prot)).recv_Get();
+      }
+    }
+
+    public void GetAll(AsyncMethodCallback<GetAll_call> resultHandler) throws TException {
+      checkReady();
+      GetAll_call method_call = new GetAll_call(resultHandler, this, protocolFactory, transport);
+      manager.call(method_call);
+    }
+
+    public static class GetAll_call extends TAsyncMethodCall {
+      public GetAll_call(AsyncMethodCallback<GetAll_call> resultHandler, TAsyncClient client, TProtocolFactory protocolFactory, TNonblockingTransport transport) throws TException {
+        super(client, protocolFactory, transport, resultHandler, false);
+      }
+
+      public void write_args(TProtocol prot) throws TException {
+        prot.writeMessageBegin(new TMessage("GetAll", TMessageType.CALL, 0));
+        GetAll_args args = new GetAll_args();
+        args.write(prot);
+        prot.writeMessageEnd();
+      }
+
+      public Map<String,String> getResult() throws TException {
+        if (getState() != State.RESPONSE_READ) {
+          throw new IllegalStateException("Method call not finished!");
+        }
+        TMemoryInputTransport memoryTransport = new TMemoryInputTransport(getFrameBuffer().array());
+        TProtocol prot = client.getProtocolFactory().getProtocol(memoryTransport);
+        return (new Client(prot)).recv_GetAll();
+      }
+    }
+
+    public void Push(String key, String value, boolean overwrite, AsyncMethodCallback<Push_call> resultHandler) throws TException {
+      checkReady();
+      Push_call method_call = new Push_call(key, value, overwrite, resultHandler, this, protocolFactory, transport);
+      manager.call(method_call);
+    }
+
+    public static class Push_call extends TAsyncMethodCall {
+      private String key;
+      private String value;
+      private boolean overwrite;
+      public Push_call(String key, String value, boolean overwrite, AsyncMethodCallback<Push_call> resultHandler, TAsyncClient client, TProtocolFactory protocolFactory, TNonblockingTransport transport) throws TException {
+        super(client, protocolFactory, transport, resultHandler, false);
+        this.key = key;
+        this.value = value;
+        this.overwrite = overwrite;
+      }
+
+      public void write_args(TProtocol prot) throws TException {
+        prot.writeMessageBegin(new TMessage("Push", TMessageType.CALL, 0));
+        Push_args args = new Push_args();
+        args.setKey(key);
+        args.setValue(value);
+        args.setOverwrite(overwrite);
+        args.write(prot);
+        prot.writeMessageEnd();
+      }
+
+      public boolean getResult() throws HranaException, TException {
+        if (getState() != State.RESPONSE_READ) {
+          throw new IllegalStateException("Method call not finished!");
+        }
+        TMemoryInputTransport memoryTransport = new TMemoryInputTransport(getFrameBuffer().array());
+        TProtocol prot = client.getProtocolFactory().getProtocol(memoryTransport);
+        return (new Client(prot)).recv_Push();
+      }
+    }
+
+    public void PushBulkAsync(Map<String,String> vals, AsyncMethodCallback<PushBulkAsync_call> resultHandler) throws TException {
+      checkReady();
+      PushBulkAsync_call method_call = new PushBulkAsync_call(vals, resultHandler, this, protocolFactory, transport);
+      manager.call(method_call);
+    }
+
+    public static class PushBulkAsync_call extends TAsyncMethodCall {
+      private Map<String,String> vals;
+      public PushBulkAsync_call(Map<String,String> vals, AsyncMethodCallback<PushBulkAsync_call> resultHandler, TAsyncClient client, TProtocolFactory protocolFactory, TNonblockingTransport transport) throws TException {
+        super(client, protocolFactory, transport, resultHandler, true);
+        this.vals = vals;
+      }
+
+      public void write_args(TProtocol prot) throws TException {
+        prot.writeMessageBegin(new TMessage("PushBulkAsync", TMessageType.CALL, 0));
+        PushBulkAsync_args args = new PushBulkAsync_args();
+        args.setVals(vals);
+        args.write(prot);
+        prot.writeMessageEnd();
+      }
+
+      public void getResult() throws TException {
+        if (getState() != State.RESPONSE_READ) {
+          throw new IllegalStateException("Method call not finished!");
+        }
+        TMemoryInputTransport memoryTransport = new TMemoryInputTransport(getFrameBuffer().array());
+        TProtocol prot = client.getProtocolFactory().getProtocol(memoryTransport);
+      }
+    }
+
+    public void Clear(AsyncMethodCallback<Clear_call> resultHandler) throws TException {
+      checkReady();
+      Clear_call method_call = new Clear_call(resultHandler, this, protocolFactory, transport);
+      manager.call(method_call);
+    }
+
+    public static class Clear_call extends TAsyncMethodCall {
+      public Clear_call(AsyncMethodCallback<Clear_call> resultHandler, TAsyncClient client, TProtocolFactory protocolFactory, TNonblockingTransport transport) throws TException {
+        super(client, protocolFactory, transport, resultHandler, false);
+      }
+
+      public void write_args(TProtocol prot) throws TException {
+        prot.writeMessageBegin(new TMessage("Clear", TMessageType.CALL, 0));
+        Clear_args args = new Clear_args();
+        args.write(prot);
+        prot.writeMessageEnd();
+      }
+
+      public boolean getResult() throws TException {
+        if (getState() != State.RESPONSE_READ) {
+          throw new IllegalStateException("Method call not finished!");
+        }
+        TMemoryInputTransport memoryTransport = new TMemoryInputTransport(getFrameBuffer().array());
+        TProtocol prot = client.getProtocolFactory().getProtocol(memoryTransport);
+        return (new Client(prot)).recv_Clear();
+      }
+    }
+
+  }
+
   public static class Processor implements TProcessor {
     private static final Logger LOGGER = LoggerFactory.getLogger(Processor.class.getName());
     public Processor(Iface iface)
@@ -297,7 +545,17 @@ public class Hrana {
       public void process(int seqid, TProtocol iprot, TProtocol oprot) throws TException
       {
         Has_args args = new Has_args();
-        args.read(iprot);
+        try {
+          args.read(iprot);
+        } catch (TProtocolException e) {
+          iprot.readMessageEnd();
+          TApplicationException x = new TApplicationException(TApplicationException.PROTOCOL_ERROR, e.getMessage());
+          oprot.writeMessageBegin(new TMessage("Has", TMessageType.EXCEPTION, seqid));
+          x.write(oprot);
+          oprot.writeMessageEnd();
+          oprot.getTransport().flush();
+          return;
+        }
         iprot.readMessageEnd();
         Has_result result = new Has_result();
         result.success = iface_.Has(args.key);
@@ -314,7 +572,17 @@ public class Hrana {
       public void process(int seqid, TProtocol iprot, TProtocol oprot) throws TException
       {
         Get_args args = new Get_args();
-        args.read(iprot);
+        try {
+          args.read(iprot);
+        } catch (TProtocolException e) {
+          iprot.readMessageEnd();
+          TApplicationException x = new TApplicationException(TApplicationException.PROTOCOL_ERROR, e.getMessage());
+          oprot.writeMessageBegin(new TMessage("Get", TMessageType.EXCEPTION, seqid));
+          x.write(oprot);
+          oprot.writeMessageEnd();
+          oprot.getTransport().flush();
+          return;
+        }
         iprot.readMessageEnd();
         Get_result result = new Get_result();
         try {
@@ -342,7 +610,17 @@ public class Hrana {
       public void process(int seqid, TProtocol iprot, TProtocol oprot) throws TException
       {
         GetAll_args args = new GetAll_args();
-        args.read(iprot);
+        try {
+          args.read(iprot);
+        } catch (TProtocolException e) {
+          iprot.readMessageEnd();
+          TApplicationException x = new TApplicationException(TApplicationException.PROTOCOL_ERROR, e.getMessage());
+          oprot.writeMessageBegin(new TMessage("GetAll", TMessageType.EXCEPTION, seqid));
+          x.write(oprot);
+          oprot.writeMessageEnd();
+          oprot.getTransport().flush();
+          return;
+        }
         iprot.readMessageEnd();
         GetAll_result result = new GetAll_result();
         result.success = iface_.GetAll();
@@ -358,7 +636,17 @@ public class Hrana {
       public void process(int seqid, TProtocol iprot, TProtocol oprot) throws TException
       {
         Push_args args = new Push_args();
-        args.read(iprot);
+        try {
+          args.read(iprot);
+        } catch (TProtocolException e) {
+          iprot.readMessageEnd();
+          TApplicationException x = new TApplicationException(TApplicationException.PROTOCOL_ERROR, e.getMessage());
+          oprot.writeMessageBegin(new TMessage("Push", TMessageType.EXCEPTION, seqid));
+          x.write(oprot);
+          oprot.writeMessageEnd();
+          oprot.getTransport().flush();
+          return;
+        }
         iprot.readMessageEnd();
         Push_result result = new Push_result();
         try {
@@ -387,7 +675,17 @@ public class Hrana {
       public void process(int seqid, TProtocol iprot, TProtocol oprot) throws TException
       {
         PushBulkAsync_args args = new PushBulkAsync_args();
-        args.read(iprot);
+        try {
+          args.read(iprot);
+        } catch (TProtocolException e) {
+          iprot.readMessageEnd();
+          TApplicationException x = new TApplicationException(TApplicationException.PROTOCOL_ERROR, e.getMessage());
+          oprot.writeMessageBegin(new TMessage("PushBulkAsync", TMessageType.EXCEPTION, seqid));
+          x.write(oprot);
+          oprot.writeMessageEnd();
+          oprot.getTransport().flush();
+          return;
+        }
         iprot.readMessageEnd();
         iface_.PushBulkAsync(args.vals);
         return;
@@ -398,7 +696,17 @@ public class Hrana {
       public void process(int seqid, TProtocol iprot, TProtocol oprot) throws TException
       {
         Clear_args args = new Clear_args();
-        args.read(iprot);
+        try {
+          args.read(iprot);
+        } catch (TProtocolException e) {
+          iprot.readMessageEnd();
+          TApplicationException x = new TApplicationException(TApplicationException.PROTOCOL_ERROR, e.getMessage());
+          oprot.writeMessageBegin(new TMessage("Clear", TMessageType.EXCEPTION, seqid));
+          x.write(oprot);
+          oprot.writeMessageEnd();
+          oprot.getTransport().flush();
+          return;
+        }
         iprot.readMessageEnd();
         Clear_result result = new Clear_result();
         result.success = iface_.Clear();
@@ -413,7 +721,7 @@ public class Hrana {
 
   }
 
-  public static class Has_args implements TBase<Has_args._Fields>, java.io.Serializable, Cloneable, Comparable<Has_args>   {
+  public static class Has_args implements TBase<Has_args, Has_args._Fields>, java.io.Serializable, Cloneable   {
     private static final TStruct STRUCT_DESC = new TStruct("Has_args");
 
     private static final TField KEY_FIELD_DESC = new TField("key", TType.STRING, (short)1);
@@ -424,12 +732,10 @@ public class Hrana {
     public enum _Fields implements TFieldIdEnum {
       KEY((short)1, "key");
 
-      private static final Map<Integer, _Fields> byId = new HashMap<Integer, _Fields>();
       private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
       static {
         for (_Fields field : EnumSet.allOf(_Fields.class)) {
-          byId.put((int)field._thriftId, field);
           byName.put(field.getFieldName(), field);
         }
       }
@@ -438,7 +744,12 @@ public class Hrana {
        * Find the _Fields constant that matches fieldId, or null if its not found.
        */
       public static _Fields findByThriftId(int fieldId) {
-        return byId.get(fieldId);
+        switch(fieldId) {
+          case 1: // KEY
+            return KEY;
+          default:
+            return null;
+        }
       }
 
       /**
@@ -477,12 +788,12 @@ public class Hrana {
 
     // isset id assignments
 
-    public static final Map<_Fields, FieldMetaData> metaDataMap = Collections.unmodifiableMap(new EnumMap<_Fields, FieldMetaData>(_Fields.class) {{
-      put(_Fields.KEY, new FieldMetaData("key", TFieldRequirementType.DEFAULT, 
-          new FieldValueMetaData(TType.STRING)));
-    }});
-
+    public static final Map<_Fields, FieldMetaData> metaDataMap;
     static {
+      Map<_Fields, FieldMetaData> tmpMap = new EnumMap<_Fields, FieldMetaData>(_Fields.class);
+      tmpMap.put(_Fields.KEY, new FieldMetaData("key", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRING)));
+      metaDataMap = Collections.unmodifiableMap(tmpMap);
       FieldMetaData.addStructMetaDataMap(Has_args.class, metaDataMap);
     }
 
@@ -509,9 +820,9 @@ public class Hrana {
       return new Has_args(this);
     }
 
-    @Deprecated
-    public Has_args clone() {
-      return new Has_args(this);
+    @Override
+    public void clear() {
+      this.key = null;
     }
 
     public String getKey() {
@@ -551,10 +862,6 @@ public class Hrana {
       }
     }
 
-    public void setFieldValue(int fieldID, Object value) {
-      setFieldValue(_Fields.findByThriftIdOrThrow(fieldID), value);
-    }
-
     public Object getFieldValue(_Fields field) {
       switch (field) {
       case KEY:
@@ -564,21 +871,17 @@ public class Hrana {
       throw new IllegalStateException();
     }
 
-    public Object getFieldValue(int fieldId) {
-      return getFieldValue(_Fields.findByThriftIdOrThrow(fieldId));
-    }
-
     /** Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise */
     public boolean isSet(_Fields field) {
+      if (field == null) {
+        throw new IllegalArgumentException();
+      }
+
       switch (field) {
       case KEY:
         return isSetKey();
       }
       throw new IllegalStateException();
-    }
-
-    public boolean isSet(int fieldID) {
-      return isSet(_Fields.findByThriftIdOrThrow(fieldID));
     }
 
     @Override
@@ -619,15 +922,21 @@ public class Hrana {
       int lastComparison = 0;
       Has_args typedOther = (Has_args)other;
 
-      lastComparison = Boolean.valueOf(isSetKey()).compareTo(isSetKey());
+      lastComparison = Boolean.valueOf(isSetKey()).compareTo(typedOther.isSetKey());
       if (lastComparison != 0) {
         return lastComparison;
       }
-      lastComparison = TBaseHelper.compareTo(key, typedOther.key);
-      if (lastComparison != 0) {
-        return lastComparison;
+      if (isSetKey()) {
+        lastComparison = TBaseHelper.compareTo(this.key, typedOther.key);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
       }
       return 0;
+    }
+
+    public _Fields fieldForId(int fieldId) {
+      return _Fields.findByThriftId(fieldId);
     }
 
     public void read(TProtocol iprot) throws TException {
@@ -693,7 +1002,7 @@ public class Hrana {
 
   }
 
-  public static class Has_result implements TBase<Has_result._Fields>, java.io.Serializable, Cloneable, Comparable<Has_result>   {
+  public static class Has_result implements TBase<Has_result, Has_result._Fields>, java.io.Serializable, Cloneable   {
     private static final TStruct STRUCT_DESC = new TStruct("Has_result");
 
     private static final TField SUCCESS_FIELD_DESC = new TField("success", TType.BOOL, (short)0);
@@ -704,12 +1013,10 @@ public class Hrana {
     public enum _Fields implements TFieldIdEnum {
       SUCCESS((short)0, "success");
 
-      private static final Map<Integer, _Fields> byId = new HashMap<Integer, _Fields>();
       private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
       static {
         for (_Fields field : EnumSet.allOf(_Fields.class)) {
-          byId.put((int)field._thriftId, field);
           byName.put(field.getFieldName(), field);
         }
       }
@@ -718,7 +1025,12 @@ public class Hrana {
        * Find the _Fields constant that matches fieldId, or null if its not found.
        */
       public static _Fields findByThriftId(int fieldId) {
-        return byId.get(fieldId);
+        switch(fieldId) {
+          case 0: // SUCCESS
+            return SUCCESS;
+          default:
+            return null;
+        }
       }
 
       /**
@@ -759,12 +1071,12 @@ public class Hrana {
     private static final int __SUCCESS_ISSET_ID = 0;
     private BitSet __isset_bit_vector = new BitSet(1);
 
-    public static final Map<_Fields, FieldMetaData> metaDataMap = Collections.unmodifiableMap(new EnumMap<_Fields, FieldMetaData>(_Fields.class) {{
-      put(_Fields.SUCCESS, new FieldMetaData("success", TFieldRequirementType.DEFAULT, 
-          new FieldValueMetaData(TType.BOOL)));
-    }});
-
+    public static final Map<_Fields, FieldMetaData> metaDataMap;
     static {
+      Map<_Fields, FieldMetaData> tmpMap = new EnumMap<_Fields, FieldMetaData>(_Fields.class);
+      tmpMap.put(_Fields.SUCCESS, new FieldMetaData("success", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.BOOL)));
+      metaDataMap = Collections.unmodifiableMap(tmpMap);
       FieldMetaData.addStructMetaDataMap(Has_result.class, metaDataMap);
     }
 
@@ -792,9 +1104,10 @@ public class Hrana {
       return new Has_result(this);
     }
 
-    @Deprecated
-    public Has_result clone() {
-      return new Has_result(this);
+    @Override
+    public void clear() {
+      setSuccessIsSet(false);
+      this.success = false;
     }
 
     public boolean isSuccess() {
@@ -833,10 +1146,6 @@ public class Hrana {
       }
     }
 
-    public void setFieldValue(int fieldID, Object value) {
-      setFieldValue(_Fields.findByThriftIdOrThrow(fieldID), value);
-    }
-
     public Object getFieldValue(_Fields field) {
       switch (field) {
       case SUCCESS:
@@ -846,21 +1155,17 @@ public class Hrana {
       throw new IllegalStateException();
     }
 
-    public Object getFieldValue(int fieldId) {
-      return getFieldValue(_Fields.findByThriftIdOrThrow(fieldId));
-    }
-
     /** Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise */
     public boolean isSet(_Fields field) {
+      if (field == null) {
+        throw new IllegalArgumentException();
+      }
+
       switch (field) {
       case SUCCESS:
         return isSetSuccess();
       }
       throw new IllegalStateException();
-    }
-
-    public boolean isSet(int fieldID) {
-      return isSet(_Fields.findByThriftIdOrThrow(fieldID));
     }
 
     @Override
@@ -901,15 +1206,21 @@ public class Hrana {
       int lastComparison = 0;
       Has_result typedOther = (Has_result)other;
 
-      lastComparison = Boolean.valueOf(isSetSuccess()).compareTo(isSetSuccess());
+      lastComparison = Boolean.valueOf(isSetSuccess()).compareTo(typedOther.isSetSuccess());
       if (lastComparison != 0) {
         return lastComparison;
       }
-      lastComparison = TBaseHelper.compareTo(success, typedOther.success);
-      if (lastComparison != 0) {
-        return lastComparison;
+      if (isSetSuccess()) {
+        lastComparison = TBaseHelper.compareTo(this.success, typedOther.success);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
       }
       return 0;
+    }
+
+    public _Fields fieldForId(int fieldId) {
+      return _Fields.findByThriftId(fieldId);
     }
 
     public void read(TProtocol iprot) throws TException {
@@ -971,7 +1282,7 @@ public class Hrana {
 
   }
 
-  public static class Get_args implements TBase<Get_args._Fields>, java.io.Serializable, Cloneable, Comparable<Get_args>   {
+  public static class Get_args implements TBase<Get_args, Get_args._Fields>, java.io.Serializable, Cloneable   {
     private static final TStruct STRUCT_DESC = new TStruct("Get_args");
 
     private static final TField KEY_FIELD_DESC = new TField("key", TType.STRING, (short)1);
@@ -982,12 +1293,10 @@ public class Hrana {
     public enum _Fields implements TFieldIdEnum {
       KEY((short)1, "key");
 
-      private static final Map<Integer, _Fields> byId = new HashMap<Integer, _Fields>();
       private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
       static {
         for (_Fields field : EnumSet.allOf(_Fields.class)) {
-          byId.put((int)field._thriftId, field);
           byName.put(field.getFieldName(), field);
         }
       }
@@ -996,7 +1305,12 @@ public class Hrana {
        * Find the _Fields constant that matches fieldId, or null if its not found.
        */
       public static _Fields findByThriftId(int fieldId) {
-        return byId.get(fieldId);
+        switch(fieldId) {
+          case 1: // KEY
+            return KEY;
+          default:
+            return null;
+        }
       }
 
       /**
@@ -1035,12 +1349,12 @@ public class Hrana {
 
     // isset id assignments
 
-    public static final Map<_Fields, FieldMetaData> metaDataMap = Collections.unmodifiableMap(new EnumMap<_Fields, FieldMetaData>(_Fields.class) {{
-      put(_Fields.KEY, new FieldMetaData("key", TFieldRequirementType.DEFAULT, 
-          new FieldValueMetaData(TType.STRING)));
-    }});
-
+    public static final Map<_Fields, FieldMetaData> metaDataMap;
     static {
+      Map<_Fields, FieldMetaData> tmpMap = new EnumMap<_Fields, FieldMetaData>(_Fields.class);
+      tmpMap.put(_Fields.KEY, new FieldMetaData("key", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRING)));
+      metaDataMap = Collections.unmodifiableMap(tmpMap);
       FieldMetaData.addStructMetaDataMap(Get_args.class, metaDataMap);
     }
 
@@ -1067,9 +1381,9 @@ public class Hrana {
       return new Get_args(this);
     }
 
-    @Deprecated
-    public Get_args clone() {
-      return new Get_args(this);
+    @Override
+    public void clear() {
+      this.key = null;
     }
 
     public String getKey() {
@@ -1109,10 +1423,6 @@ public class Hrana {
       }
     }
 
-    public void setFieldValue(int fieldID, Object value) {
-      setFieldValue(_Fields.findByThriftIdOrThrow(fieldID), value);
-    }
-
     public Object getFieldValue(_Fields field) {
       switch (field) {
       case KEY:
@@ -1122,21 +1432,17 @@ public class Hrana {
       throw new IllegalStateException();
     }
 
-    public Object getFieldValue(int fieldId) {
-      return getFieldValue(_Fields.findByThriftIdOrThrow(fieldId));
-    }
-
     /** Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise */
     public boolean isSet(_Fields field) {
+      if (field == null) {
+        throw new IllegalArgumentException();
+      }
+
       switch (field) {
       case KEY:
         return isSetKey();
       }
       throw new IllegalStateException();
-    }
-
-    public boolean isSet(int fieldID) {
-      return isSet(_Fields.findByThriftIdOrThrow(fieldID));
     }
 
     @Override
@@ -1177,15 +1483,21 @@ public class Hrana {
       int lastComparison = 0;
       Get_args typedOther = (Get_args)other;
 
-      lastComparison = Boolean.valueOf(isSetKey()).compareTo(isSetKey());
+      lastComparison = Boolean.valueOf(isSetKey()).compareTo(typedOther.isSetKey());
       if (lastComparison != 0) {
         return lastComparison;
       }
-      lastComparison = TBaseHelper.compareTo(key, typedOther.key);
-      if (lastComparison != 0) {
-        return lastComparison;
+      if (isSetKey()) {
+        lastComparison = TBaseHelper.compareTo(this.key, typedOther.key);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
       }
       return 0;
+    }
+
+    public _Fields fieldForId(int fieldId) {
+      return _Fields.findByThriftId(fieldId);
     }
 
     public void read(TProtocol iprot) throws TException {
@@ -1251,7 +1563,7 @@ public class Hrana {
 
   }
 
-  public static class Get_result implements TBase<Get_result._Fields>, java.io.Serializable, Cloneable, Comparable<Get_result>   {
+  public static class Get_result implements TBase<Get_result, Get_result._Fields>, java.io.Serializable, Cloneable   {
     private static final TStruct STRUCT_DESC = new TStruct("Get_result");
 
     private static final TField SUCCESS_FIELD_DESC = new TField("success", TType.STRING, (short)0);
@@ -1265,12 +1577,10 @@ public class Hrana {
       SUCCESS((short)0, "success"),
       E((short)1, "e");
 
-      private static final Map<Integer, _Fields> byId = new HashMap<Integer, _Fields>();
       private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
       static {
         for (_Fields field : EnumSet.allOf(_Fields.class)) {
-          byId.put((int)field._thriftId, field);
           byName.put(field.getFieldName(), field);
         }
       }
@@ -1279,7 +1589,14 @@ public class Hrana {
        * Find the _Fields constant that matches fieldId, or null if its not found.
        */
       public static _Fields findByThriftId(int fieldId) {
-        return byId.get(fieldId);
+        switch(fieldId) {
+          case 0: // SUCCESS
+            return SUCCESS;
+          case 1: // E
+            return E;
+          default:
+            return null;
+        }
       }
 
       /**
@@ -1318,14 +1635,14 @@ public class Hrana {
 
     // isset id assignments
 
-    public static final Map<_Fields, FieldMetaData> metaDataMap = Collections.unmodifiableMap(new EnumMap<_Fields, FieldMetaData>(_Fields.class) {{
-      put(_Fields.SUCCESS, new FieldMetaData("success", TFieldRequirementType.DEFAULT, 
-          new FieldValueMetaData(TType.STRING)));
-      put(_Fields.E, new FieldMetaData("e", TFieldRequirementType.DEFAULT, 
-          new FieldValueMetaData(TType.STRUCT)));
-    }});
-
+    public static final Map<_Fields, FieldMetaData> metaDataMap;
     static {
+      Map<_Fields, FieldMetaData> tmpMap = new EnumMap<_Fields, FieldMetaData>(_Fields.class);
+      tmpMap.put(_Fields.SUCCESS, new FieldMetaData("success", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRING)));
+      tmpMap.put(_Fields.E, new FieldMetaData("e", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRUCT)));
+      metaDataMap = Collections.unmodifiableMap(tmpMap);
       FieldMetaData.addStructMetaDataMap(Get_result.class, metaDataMap);
     }
 
@@ -1357,9 +1674,10 @@ public class Hrana {
       return new Get_result(this);
     }
 
-    @Deprecated
-    public Get_result clone() {
-      return new Get_result(this);
+    @Override
+    public void clear() {
+      this.success = null;
+      this.e = null;
     }
 
     public String getSuccess() {
@@ -1431,10 +1749,6 @@ public class Hrana {
       }
     }
 
-    public void setFieldValue(int fieldID, Object value) {
-      setFieldValue(_Fields.findByThriftIdOrThrow(fieldID), value);
-    }
-
     public Object getFieldValue(_Fields field) {
       switch (field) {
       case SUCCESS:
@@ -1447,12 +1761,12 @@ public class Hrana {
       throw new IllegalStateException();
     }
 
-    public Object getFieldValue(int fieldId) {
-      return getFieldValue(_Fields.findByThriftIdOrThrow(fieldId));
-    }
-
     /** Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise */
     public boolean isSet(_Fields field) {
+      if (field == null) {
+        throw new IllegalArgumentException();
+      }
+
       switch (field) {
       case SUCCESS:
         return isSetSuccess();
@@ -1460,10 +1774,6 @@ public class Hrana {
         return isSetE();
       }
       throw new IllegalStateException();
-    }
-
-    public boolean isSet(int fieldID) {
-      return isSet(_Fields.findByThriftIdOrThrow(fieldID));
     }
 
     @Override
@@ -1513,23 +1823,31 @@ public class Hrana {
       int lastComparison = 0;
       Get_result typedOther = (Get_result)other;
 
-      lastComparison = Boolean.valueOf(isSetSuccess()).compareTo(isSetSuccess());
+      lastComparison = Boolean.valueOf(isSetSuccess()).compareTo(typedOther.isSetSuccess());
       if (lastComparison != 0) {
         return lastComparison;
       }
-      lastComparison = TBaseHelper.compareTo(success, typedOther.success);
+      if (isSetSuccess()) {
+        lastComparison = TBaseHelper.compareTo(this.success, typedOther.success);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = Boolean.valueOf(isSetE()).compareTo(typedOther.isSetE());
       if (lastComparison != 0) {
         return lastComparison;
       }
-      lastComparison = Boolean.valueOf(isSetE()).compareTo(isSetE());
-      if (lastComparison != 0) {
-        return lastComparison;
-      }
-      lastComparison = TBaseHelper.compareTo(e, typedOther.e);
-      if (lastComparison != 0) {
-        return lastComparison;
+      if (isSetE()) {
+        lastComparison = TBaseHelper.compareTo(this.e, typedOther.e);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
       }
       return 0;
+    }
+
+    public _Fields fieldForId(int fieldId) {
+      return _Fields.findByThriftId(fieldId);
     }
 
     public void read(TProtocol iprot) throws TException {
@@ -1614,7 +1932,7 @@ public class Hrana {
 
   }
 
-  public static class GetAll_args implements TBase<GetAll_args._Fields>, java.io.Serializable, Cloneable, Comparable<GetAll_args>   {
+  public static class GetAll_args implements TBase<GetAll_args, GetAll_args._Fields>, java.io.Serializable, Cloneable   {
     private static final TStruct STRUCT_DESC = new TStruct("GetAll_args");
 
 
@@ -1623,12 +1941,10 @@ public class Hrana {
     public enum _Fields implements TFieldIdEnum {
 ;
 
-      private static final Map<Integer, _Fields> byId = new HashMap<Integer, _Fields>();
       private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
       static {
         for (_Fields field : EnumSet.allOf(_Fields.class)) {
-          byId.put((int)field._thriftId, field);
           byName.put(field.getFieldName(), field);
         }
       }
@@ -1637,7 +1953,10 @@ public class Hrana {
        * Find the _Fields constant that matches fieldId, or null if its not found.
        */
       public static _Fields findByThriftId(int fieldId) {
-        return byId.get(fieldId);
+        switch(fieldId) {
+          default:
+            return null;
+        }
       }
 
       /**
@@ -1673,10 +1992,10 @@ public class Hrana {
         return _fieldName;
       }
     }
-    public static final Map<_Fields, FieldMetaData> metaDataMap = Collections.unmodifiableMap(new EnumMap<_Fields, FieldMetaData>(_Fields.class) {{
-    }});
-
+    public static final Map<_Fields, FieldMetaData> metaDataMap;
     static {
+      Map<_Fields, FieldMetaData> tmpMap = new EnumMap<_Fields, FieldMetaData>(_Fields.class);
+      metaDataMap = Collections.unmodifiableMap(tmpMap);
       FieldMetaData.addStructMetaDataMap(GetAll_args.class, metaDataMap);
     }
 
@@ -1693,18 +2012,13 @@ public class Hrana {
       return new GetAll_args(this);
     }
 
-    @Deprecated
-    public GetAll_args clone() {
-      return new GetAll_args(this);
+    @Override
+    public void clear() {
     }
 
     public void setFieldValue(_Fields field, Object value) {
       switch (field) {
       }
-    }
-
-    public void setFieldValue(int fieldID, Object value) {
-      setFieldValue(_Fields.findByThriftIdOrThrow(fieldID), value);
     }
 
     public Object getFieldValue(_Fields field) {
@@ -1713,19 +2027,15 @@ public class Hrana {
       throw new IllegalStateException();
     }
 
-    public Object getFieldValue(int fieldId) {
-      return getFieldValue(_Fields.findByThriftIdOrThrow(fieldId));
-    }
-
     /** Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise */
     public boolean isSet(_Fields field) {
+      if (field == null) {
+        throw new IllegalArgumentException();
+      }
+
       switch (field) {
       }
       throw new IllegalStateException();
-    }
-
-    public boolean isSet(int fieldID) {
-      return isSet(_Fields.findByThriftIdOrThrow(fieldID));
     }
 
     @Override
@@ -1758,6 +2068,10 @@ public class Hrana {
       GetAll_args typedOther = (GetAll_args)other;
 
       return 0;
+    }
+
+    public _Fields fieldForId(int fieldId) {
+      return _Fields.findByThriftId(fieldId);
     }
 
     public void read(TProtocol iprot) throws TException {
@@ -1804,7 +2118,7 @@ public class Hrana {
 
   }
 
-  public static class GetAll_result implements TBase<GetAll_result._Fields>, java.io.Serializable, Cloneable   {
+  public static class GetAll_result implements TBase<GetAll_result, GetAll_result._Fields>, java.io.Serializable, Cloneable   {
     private static final TStruct STRUCT_DESC = new TStruct("GetAll_result");
 
     private static final TField SUCCESS_FIELD_DESC = new TField("success", TType.MAP, (short)0);
@@ -1815,12 +2129,10 @@ public class Hrana {
     public enum _Fields implements TFieldIdEnum {
       SUCCESS((short)0, "success");
 
-      private static final Map<Integer, _Fields> byId = new HashMap<Integer, _Fields>();
       private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
       static {
         for (_Fields field : EnumSet.allOf(_Fields.class)) {
-          byId.put((int)field._thriftId, field);
           byName.put(field.getFieldName(), field);
         }
       }
@@ -1829,7 +2141,12 @@ public class Hrana {
        * Find the _Fields constant that matches fieldId, or null if its not found.
        */
       public static _Fields findByThriftId(int fieldId) {
-        return byId.get(fieldId);
+        switch(fieldId) {
+          case 0: // SUCCESS
+            return SUCCESS;
+          default:
+            return null;
+        }
       }
 
       /**
@@ -1868,14 +2185,14 @@ public class Hrana {
 
     // isset id assignments
 
-    public static final Map<_Fields, FieldMetaData> metaDataMap = Collections.unmodifiableMap(new EnumMap<_Fields, FieldMetaData>(_Fields.class) {{
-      put(_Fields.SUCCESS, new FieldMetaData("success", TFieldRequirementType.DEFAULT, 
+    public static final Map<_Fields, FieldMetaData> metaDataMap;
+    static {
+      Map<_Fields, FieldMetaData> tmpMap = new EnumMap<_Fields, FieldMetaData>(_Fields.class);
+      tmpMap.put(_Fields.SUCCESS, new FieldMetaData("success", TFieldRequirementType.DEFAULT, 
           new MapMetaData(TType.MAP, 
               new FieldValueMetaData(TType.STRING), 
               new FieldValueMetaData(TType.STRING))));
-    }});
-
-    static {
+      metaDataMap = Collections.unmodifiableMap(tmpMap);
       FieldMetaData.addStructMetaDataMap(GetAll_result.class, metaDataMap);
     }
 
@@ -1914,9 +2231,9 @@ public class Hrana {
       return new GetAll_result(this);
     }
 
-    @Deprecated
-    public GetAll_result clone() {
-      return new GetAll_result(this);
+    @Override
+    public void clear() {
+      this.success = null;
     }
 
     public int getSuccessSize() {
@@ -1967,10 +2284,6 @@ public class Hrana {
       }
     }
 
-    public void setFieldValue(int fieldID, Object value) {
-      setFieldValue(_Fields.findByThriftIdOrThrow(fieldID), value);
-    }
-
     public Object getFieldValue(_Fields field) {
       switch (field) {
       case SUCCESS:
@@ -1980,21 +2293,17 @@ public class Hrana {
       throw new IllegalStateException();
     }
 
-    public Object getFieldValue(int fieldId) {
-      return getFieldValue(_Fields.findByThriftIdOrThrow(fieldId));
-    }
-
     /** Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise */
     public boolean isSet(_Fields field) {
+      if (field == null) {
+        throw new IllegalArgumentException();
+      }
+
       switch (field) {
       case SUCCESS:
         return isSetSuccess();
       }
       throw new IllegalStateException();
-    }
-
-    public boolean isSet(int fieldID) {
-      return isSet(_Fields.findByThriftIdOrThrow(fieldID));
     }
 
     @Override
@@ -2025,6 +2334,31 @@ public class Hrana {
     @Override
     public int hashCode() {
       return 0;
+    }
+
+    public int compareTo(GetAll_result other) {
+      if (!getClass().equals(other.getClass())) {
+        return getClass().getName().compareTo(other.getClass().getName());
+      }
+
+      int lastComparison = 0;
+      GetAll_result typedOther = (GetAll_result)other;
+
+      lastComparison = Boolean.valueOf(isSetSuccess()).compareTo(typedOther.isSetSuccess());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetSuccess()) {
+        lastComparison = TBaseHelper.compareTo(this.success, typedOther.success);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      return 0;
+    }
+
+    public _Fields fieldForId(int fieldId) {
+      return _Fields.findByThriftId(fieldId);
     }
 
     public void read(TProtocol iprot) throws TException {
@@ -2109,7 +2443,7 @@ public class Hrana {
 
   }
 
-  public static class Push_args implements TBase<Push_args._Fields>, java.io.Serializable, Cloneable, Comparable<Push_args>   {
+  public static class Push_args implements TBase<Push_args, Push_args._Fields>, java.io.Serializable, Cloneable   {
     private static final TStruct STRUCT_DESC = new TStruct("Push_args");
 
     private static final TField KEY_FIELD_DESC = new TField("key", TType.STRING, (short)1);
@@ -2126,12 +2460,10 @@ public class Hrana {
       VALUE((short)2, "value"),
       OVERWRITE((short)3, "overwrite");
 
-      private static final Map<Integer, _Fields> byId = new HashMap<Integer, _Fields>();
       private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
       static {
         for (_Fields field : EnumSet.allOf(_Fields.class)) {
-          byId.put((int)field._thriftId, field);
           byName.put(field.getFieldName(), field);
         }
       }
@@ -2140,7 +2472,16 @@ public class Hrana {
        * Find the _Fields constant that matches fieldId, or null if its not found.
        */
       public static _Fields findByThriftId(int fieldId) {
-        return byId.get(fieldId);
+        switch(fieldId) {
+          case 1: // KEY
+            return KEY;
+          case 2: // VALUE
+            return VALUE;
+          case 3: // OVERWRITE
+            return OVERWRITE;
+          default:
+            return null;
+        }
       }
 
       /**
@@ -2181,16 +2522,16 @@ public class Hrana {
     private static final int __OVERWRITE_ISSET_ID = 0;
     private BitSet __isset_bit_vector = new BitSet(1);
 
-    public static final Map<_Fields, FieldMetaData> metaDataMap = Collections.unmodifiableMap(new EnumMap<_Fields, FieldMetaData>(_Fields.class) {{
-      put(_Fields.KEY, new FieldMetaData("key", TFieldRequirementType.DEFAULT, 
-          new FieldValueMetaData(TType.STRING)));
-      put(_Fields.VALUE, new FieldMetaData("value", TFieldRequirementType.DEFAULT, 
-          new FieldValueMetaData(TType.STRING)));
-      put(_Fields.OVERWRITE, new FieldMetaData("overwrite", TFieldRequirementType.DEFAULT, 
-          new FieldValueMetaData(TType.BOOL)));
-    }});
-
+    public static final Map<_Fields, FieldMetaData> metaDataMap;
     static {
+      Map<_Fields, FieldMetaData> tmpMap = new EnumMap<_Fields, FieldMetaData>(_Fields.class);
+      tmpMap.put(_Fields.KEY, new FieldMetaData("key", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRING)));
+      tmpMap.put(_Fields.VALUE, new FieldMetaData("value", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRING)));
+      tmpMap.put(_Fields.OVERWRITE, new FieldMetaData("overwrite", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.BOOL)));
+      metaDataMap = Collections.unmodifiableMap(tmpMap);
       FieldMetaData.addStructMetaDataMap(Push_args.class, metaDataMap);
     }
 
@@ -2228,9 +2569,12 @@ public class Hrana {
       return new Push_args(this);
     }
 
-    @Deprecated
-    public Push_args clone() {
-      return new Push_args(this);
+    @Override
+    public void clear() {
+      this.key = null;
+      this.value = null;
+      setOverwriteIsSet(false);
+      this.overwrite = false;
     }
 
     public String getKey() {
@@ -2333,10 +2677,6 @@ public class Hrana {
       }
     }
 
-    public void setFieldValue(int fieldID, Object value) {
-      setFieldValue(_Fields.findByThriftIdOrThrow(fieldID), value);
-    }
-
     public Object getFieldValue(_Fields field) {
       switch (field) {
       case KEY:
@@ -2352,12 +2692,12 @@ public class Hrana {
       throw new IllegalStateException();
     }
 
-    public Object getFieldValue(int fieldId) {
-      return getFieldValue(_Fields.findByThriftIdOrThrow(fieldId));
-    }
-
     /** Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise */
     public boolean isSet(_Fields field) {
+      if (field == null) {
+        throw new IllegalArgumentException();
+      }
+
       switch (field) {
       case KEY:
         return isSetKey();
@@ -2367,10 +2707,6 @@ public class Hrana {
         return isSetOverwrite();
       }
       throw new IllegalStateException();
-    }
-
-    public boolean isSet(int fieldID) {
-      return isSet(_Fields.findByThriftIdOrThrow(fieldID));
     }
 
     @Override
@@ -2429,31 +2765,41 @@ public class Hrana {
       int lastComparison = 0;
       Push_args typedOther = (Push_args)other;
 
-      lastComparison = Boolean.valueOf(isSetKey()).compareTo(isSetKey());
+      lastComparison = Boolean.valueOf(isSetKey()).compareTo(typedOther.isSetKey());
       if (lastComparison != 0) {
         return lastComparison;
       }
-      lastComparison = TBaseHelper.compareTo(key, typedOther.key);
+      if (isSetKey()) {
+        lastComparison = TBaseHelper.compareTo(this.key, typedOther.key);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = Boolean.valueOf(isSetValue()).compareTo(typedOther.isSetValue());
       if (lastComparison != 0) {
         return lastComparison;
       }
-      lastComparison = Boolean.valueOf(isSetValue()).compareTo(isSetValue());
+      if (isSetValue()) {
+        lastComparison = TBaseHelper.compareTo(this.value, typedOther.value);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = Boolean.valueOf(isSetOverwrite()).compareTo(typedOther.isSetOverwrite());
       if (lastComparison != 0) {
         return lastComparison;
       }
-      lastComparison = TBaseHelper.compareTo(value, typedOther.value);
-      if (lastComparison != 0) {
-        return lastComparison;
-      }
-      lastComparison = Boolean.valueOf(isSetOverwrite()).compareTo(isSetOverwrite());
-      if (lastComparison != 0) {
-        return lastComparison;
-      }
-      lastComparison = TBaseHelper.compareTo(overwrite, typedOther.overwrite);
-      if (lastComparison != 0) {
-        return lastComparison;
+      if (isSetOverwrite()) {
+        lastComparison = TBaseHelper.compareTo(this.overwrite, typedOther.overwrite);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
       }
       return 0;
+    }
+
+    public _Fields fieldForId(int fieldId) {
+      return _Fields.findByThriftId(fieldId);
     }
 
     public void read(TProtocol iprot) throws TException {
@@ -2554,7 +2900,7 @@ public class Hrana {
 
   }
 
-  public static class Push_result implements TBase<Push_result._Fields>, java.io.Serializable, Cloneable, Comparable<Push_result>   {
+  public static class Push_result implements TBase<Push_result, Push_result._Fields>, java.io.Serializable, Cloneable   {
     private static final TStruct STRUCT_DESC = new TStruct("Push_result");
 
     private static final TField SUCCESS_FIELD_DESC = new TField("success", TType.BOOL, (short)0);
@@ -2568,12 +2914,10 @@ public class Hrana {
       SUCCESS((short)0, "success"),
       E((short)1, "e");
 
-      private static final Map<Integer, _Fields> byId = new HashMap<Integer, _Fields>();
       private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
       static {
         for (_Fields field : EnumSet.allOf(_Fields.class)) {
-          byId.put((int)field._thriftId, field);
           byName.put(field.getFieldName(), field);
         }
       }
@@ -2582,7 +2926,14 @@ public class Hrana {
        * Find the _Fields constant that matches fieldId, or null if its not found.
        */
       public static _Fields findByThriftId(int fieldId) {
-        return byId.get(fieldId);
+        switch(fieldId) {
+          case 0: // SUCCESS
+            return SUCCESS;
+          case 1: // E
+            return E;
+          default:
+            return null;
+        }
       }
 
       /**
@@ -2623,14 +2974,14 @@ public class Hrana {
     private static final int __SUCCESS_ISSET_ID = 0;
     private BitSet __isset_bit_vector = new BitSet(1);
 
-    public static final Map<_Fields, FieldMetaData> metaDataMap = Collections.unmodifiableMap(new EnumMap<_Fields, FieldMetaData>(_Fields.class) {{
-      put(_Fields.SUCCESS, new FieldMetaData("success", TFieldRequirementType.DEFAULT, 
-          new FieldValueMetaData(TType.BOOL)));
-      put(_Fields.E, new FieldMetaData("e", TFieldRequirementType.DEFAULT, 
-          new FieldValueMetaData(TType.STRUCT)));
-    }});
-
+    public static final Map<_Fields, FieldMetaData> metaDataMap;
     static {
+      Map<_Fields, FieldMetaData> tmpMap = new EnumMap<_Fields, FieldMetaData>(_Fields.class);
+      tmpMap.put(_Fields.SUCCESS, new FieldMetaData("success", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.BOOL)));
+      tmpMap.put(_Fields.E, new FieldMetaData("e", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRUCT)));
+      metaDataMap = Collections.unmodifiableMap(tmpMap);
       FieldMetaData.addStructMetaDataMap(Push_result.class, metaDataMap);
     }
 
@@ -2663,9 +3014,11 @@ public class Hrana {
       return new Push_result(this);
     }
 
-    @Deprecated
-    public Push_result clone() {
-      return new Push_result(this);
+    @Override
+    public void clear() {
+      setSuccessIsSet(false);
+      this.success = false;
+      this.e = null;
     }
 
     public boolean isSuccess() {
@@ -2736,10 +3089,6 @@ public class Hrana {
       }
     }
 
-    public void setFieldValue(int fieldID, Object value) {
-      setFieldValue(_Fields.findByThriftIdOrThrow(fieldID), value);
-    }
-
     public Object getFieldValue(_Fields field) {
       switch (field) {
       case SUCCESS:
@@ -2752,12 +3101,12 @@ public class Hrana {
       throw new IllegalStateException();
     }
 
-    public Object getFieldValue(int fieldId) {
-      return getFieldValue(_Fields.findByThriftIdOrThrow(fieldId));
-    }
-
     /** Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise */
     public boolean isSet(_Fields field) {
+      if (field == null) {
+        throw new IllegalArgumentException();
+      }
+
       switch (field) {
       case SUCCESS:
         return isSetSuccess();
@@ -2765,10 +3114,6 @@ public class Hrana {
         return isSetE();
       }
       throw new IllegalStateException();
-    }
-
-    public boolean isSet(int fieldID) {
-      return isSet(_Fields.findByThriftIdOrThrow(fieldID));
     }
 
     @Override
@@ -2818,23 +3163,31 @@ public class Hrana {
       int lastComparison = 0;
       Push_result typedOther = (Push_result)other;
 
-      lastComparison = Boolean.valueOf(isSetSuccess()).compareTo(isSetSuccess());
+      lastComparison = Boolean.valueOf(isSetSuccess()).compareTo(typedOther.isSetSuccess());
       if (lastComparison != 0) {
         return lastComparison;
       }
-      lastComparison = TBaseHelper.compareTo(success, typedOther.success);
+      if (isSetSuccess()) {
+        lastComparison = TBaseHelper.compareTo(this.success, typedOther.success);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = Boolean.valueOf(isSetE()).compareTo(typedOther.isSetE());
       if (lastComparison != 0) {
         return lastComparison;
       }
-      lastComparison = Boolean.valueOf(isSetE()).compareTo(isSetE());
-      if (lastComparison != 0) {
-        return lastComparison;
-      }
-      lastComparison = TBaseHelper.compareTo(e, typedOther.e);
-      if (lastComparison != 0) {
-        return lastComparison;
+      if (isSetE()) {
+        lastComparison = TBaseHelper.compareTo(this.e, typedOther.e);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
       }
       return 0;
+    }
+
+    public _Fields fieldForId(int fieldId) {
+      return _Fields.findByThriftId(fieldId);
     }
 
     public void read(TProtocol iprot) throws TException {
@@ -2916,7 +3269,7 @@ public class Hrana {
 
   }
 
-  public static class PushBulkAsync_args implements TBase<PushBulkAsync_args._Fields>, java.io.Serializable, Cloneable   {
+  public static class PushBulkAsync_args implements TBase<PushBulkAsync_args, PushBulkAsync_args._Fields>, java.io.Serializable, Cloneable   {
     private static final TStruct STRUCT_DESC = new TStruct("PushBulkAsync_args");
 
     private static final TField VALS_FIELD_DESC = new TField("vals", TType.MAP, (short)1);
@@ -2927,12 +3280,10 @@ public class Hrana {
     public enum _Fields implements TFieldIdEnum {
       VALS((short)1, "vals");
 
-      private static final Map<Integer, _Fields> byId = new HashMap<Integer, _Fields>();
       private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
       static {
         for (_Fields field : EnumSet.allOf(_Fields.class)) {
-          byId.put((int)field._thriftId, field);
           byName.put(field.getFieldName(), field);
         }
       }
@@ -2941,7 +3292,12 @@ public class Hrana {
        * Find the _Fields constant that matches fieldId, or null if its not found.
        */
       public static _Fields findByThriftId(int fieldId) {
-        return byId.get(fieldId);
+        switch(fieldId) {
+          case 1: // VALS
+            return VALS;
+          default:
+            return null;
+        }
       }
 
       /**
@@ -2980,14 +3336,14 @@ public class Hrana {
 
     // isset id assignments
 
-    public static final Map<_Fields, FieldMetaData> metaDataMap = Collections.unmodifiableMap(new EnumMap<_Fields, FieldMetaData>(_Fields.class) {{
-      put(_Fields.VALS, new FieldMetaData("vals", TFieldRequirementType.DEFAULT, 
+    public static final Map<_Fields, FieldMetaData> metaDataMap;
+    static {
+      Map<_Fields, FieldMetaData> tmpMap = new EnumMap<_Fields, FieldMetaData>(_Fields.class);
+      tmpMap.put(_Fields.VALS, new FieldMetaData("vals", TFieldRequirementType.DEFAULT, 
           new MapMetaData(TType.MAP, 
               new FieldValueMetaData(TType.STRING), 
               new FieldValueMetaData(TType.STRING))));
-    }});
-
-    static {
+      metaDataMap = Collections.unmodifiableMap(tmpMap);
       FieldMetaData.addStructMetaDataMap(PushBulkAsync_args.class, metaDataMap);
     }
 
@@ -3026,9 +3382,9 @@ public class Hrana {
       return new PushBulkAsync_args(this);
     }
 
-    @Deprecated
-    public PushBulkAsync_args clone() {
-      return new PushBulkAsync_args(this);
+    @Override
+    public void clear() {
+      this.vals = null;
     }
 
     public int getValsSize() {
@@ -3079,10 +3435,6 @@ public class Hrana {
       }
     }
 
-    public void setFieldValue(int fieldID, Object value) {
-      setFieldValue(_Fields.findByThriftIdOrThrow(fieldID), value);
-    }
-
     public Object getFieldValue(_Fields field) {
       switch (field) {
       case VALS:
@@ -3092,21 +3444,17 @@ public class Hrana {
       throw new IllegalStateException();
     }
 
-    public Object getFieldValue(int fieldId) {
-      return getFieldValue(_Fields.findByThriftIdOrThrow(fieldId));
-    }
-
     /** Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise */
     public boolean isSet(_Fields field) {
+      if (field == null) {
+        throw new IllegalArgumentException();
+      }
+
       switch (field) {
       case VALS:
         return isSetVals();
       }
       throw new IllegalStateException();
-    }
-
-    public boolean isSet(int fieldID) {
-      return isSet(_Fields.findByThriftIdOrThrow(fieldID));
     }
 
     @Override
@@ -3137,6 +3485,31 @@ public class Hrana {
     @Override
     public int hashCode() {
       return 0;
+    }
+
+    public int compareTo(PushBulkAsync_args other) {
+      if (!getClass().equals(other.getClass())) {
+        return getClass().getName().compareTo(other.getClass().getName());
+      }
+
+      int lastComparison = 0;
+      PushBulkAsync_args typedOther = (PushBulkAsync_args)other;
+
+      lastComparison = Boolean.valueOf(isSetVals()).compareTo(typedOther.isSetVals());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetVals()) {
+        lastComparison = TBaseHelper.compareTo(this.vals, typedOther.vals);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      return 0;
+    }
+
+    public _Fields fieldForId(int fieldId) {
+      return _Fields.findByThriftId(fieldId);
     }
 
     public void read(TProtocol iprot) throws TException {
@@ -3222,7 +3595,7 @@ public class Hrana {
 
   }
 
-  public static class Clear_args implements TBase<Clear_args._Fields>, java.io.Serializable, Cloneable, Comparable<Clear_args>   {
+  public static class Clear_args implements TBase<Clear_args, Clear_args._Fields>, java.io.Serializable, Cloneable   {
     private static final TStruct STRUCT_DESC = new TStruct("Clear_args");
 
 
@@ -3231,12 +3604,10 @@ public class Hrana {
     public enum _Fields implements TFieldIdEnum {
 ;
 
-      private static final Map<Integer, _Fields> byId = new HashMap<Integer, _Fields>();
       private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
       static {
         for (_Fields field : EnumSet.allOf(_Fields.class)) {
-          byId.put((int)field._thriftId, field);
           byName.put(field.getFieldName(), field);
         }
       }
@@ -3245,7 +3616,10 @@ public class Hrana {
        * Find the _Fields constant that matches fieldId, or null if its not found.
        */
       public static _Fields findByThriftId(int fieldId) {
-        return byId.get(fieldId);
+        switch(fieldId) {
+          default:
+            return null;
+        }
       }
 
       /**
@@ -3281,10 +3655,10 @@ public class Hrana {
         return _fieldName;
       }
     }
-    public static final Map<_Fields, FieldMetaData> metaDataMap = Collections.unmodifiableMap(new EnumMap<_Fields, FieldMetaData>(_Fields.class) {{
-    }});
-
+    public static final Map<_Fields, FieldMetaData> metaDataMap;
     static {
+      Map<_Fields, FieldMetaData> tmpMap = new EnumMap<_Fields, FieldMetaData>(_Fields.class);
+      metaDataMap = Collections.unmodifiableMap(tmpMap);
       FieldMetaData.addStructMetaDataMap(Clear_args.class, metaDataMap);
     }
 
@@ -3301,18 +3675,13 @@ public class Hrana {
       return new Clear_args(this);
     }
 
-    @Deprecated
-    public Clear_args clone() {
-      return new Clear_args(this);
+    @Override
+    public void clear() {
     }
 
     public void setFieldValue(_Fields field, Object value) {
       switch (field) {
       }
-    }
-
-    public void setFieldValue(int fieldID, Object value) {
-      setFieldValue(_Fields.findByThriftIdOrThrow(fieldID), value);
     }
 
     public Object getFieldValue(_Fields field) {
@@ -3321,19 +3690,15 @@ public class Hrana {
       throw new IllegalStateException();
     }
 
-    public Object getFieldValue(int fieldId) {
-      return getFieldValue(_Fields.findByThriftIdOrThrow(fieldId));
-    }
-
     /** Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise */
     public boolean isSet(_Fields field) {
+      if (field == null) {
+        throw new IllegalArgumentException();
+      }
+
       switch (field) {
       }
       throw new IllegalStateException();
-    }
-
-    public boolean isSet(int fieldID) {
-      return isSet(_Fields.findByThriftIdOrThrow(fieldID));
     }
 
     @Override
@@ -3366,6 +3731,10 @@ public class Hrana {
       Clear_args typedOther = (Clear_args)other;
 
       return 0;
+    }
+
+    public _Fields fieldForId(int fieldId) {
+      return _Fields.findByThriftId(fieldId);
     }
 
     public void read(TProtocol iprot) throws TException {
@@ -3412,7 +3781,7 @@ public class Hrana {
 
   }
 
-  public static class Clear_result implements TBase<Clear_result._Fields>, java.io.Serializable, Cloneable, Comparable<Clear_result>   {
+  public static class Clear_result implements TBase<Clear_result, Clear_result._Fields>, java.io.Serializable, Cloneable   {
     private static final TStruct STRUCT_DESC = new TStruct("Clear_result");
 
     private static final TField SUCCESS_FIELD_DESC = new TField("success", TType.BOOL, (short)0);
@@ -3423,12 +3792,10 @@ public class Hrana {
     public enum _Fields implements TFieldIdEnum {
       SUCCESS((short)0, "success");
 
-      private static final Map<Integer, _Fields> byId = new HashMap<Integer, _Fields>();
       private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
       static {
         for (_Fields field : EnumSet.allOf(_Fields.class)) {
-          byId.put((int)field._thriftId, field);
           byName.put(field.getFieldName(), field);
         }
       }
@@ -3437,7 +3804,12 @@ public class Hrana {
        * Find the _Fields constant that matches fieldId, or null if its not found.
        */
       public static _Fields findByThriftId(int fieldId) {
-        return byId.get(fieldId);
+        switch(fieldId) {
+          case 0: // SUCCESS
+            return SUCCESS;
+          default:
+            return null;
+        }
       }
 
       /**
@@ -3478,12 +3850,12 @@ public class Hrana {
     private static final int __SUCCESS_ISSET_ID = 0;
     private BitSet __isset_bit_vector = new BitSet(1);
 
-    public static final Map<_Fields, FieldMetaData> metaDataMap = Collections.unmodifiableMap(new EnumMap<_Fields, FieldMetaData>(_Fields.class) {{
-      put(_Fields.SUCCESS, new FieldMetaData("success", TFieldRequirementType.DEFAULT, 
-          new FieldValueMetaData(TType.BOOL)));
-    }});
-
+    public static final Map<_Fields, FieldMetaData> metaDataMap;
     static {
+      Map<_Fields, FieldMetaData> tmpMap = new EnumMap<_Fields, FieldMetaData>(_Fields.class);
+      tmpMap.put(_Fields.SUCCESS, new FieldMetaData("success", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.BOOL)));
+      metaDataMap = Collections.unmodifiableMap(tmpMap);
       FieldMetaData.addStructMetaDataMap(Clear_result.class, metaDataMap);
     }
 
@@ -3511,9 +3883,10 @@ public class Hrana {
       return new Clear_result(this);
     }
 
-    @Deprecated
-    public Clear_result clone() {
-      return new Clear_result(this);
+    @Override
+    public void clear() {
+      setSuccessIsSet(false);
+      this.success = false;
     }
 
     public boolean isSuccess() {
@@ -3552,10 +3925,6 @@ public class Hrana {
       }
     }
 
-    public void setFieldValue(int fieldID, Object value) {
-      setFieldValue(_Fields.findByThriftIdOrThrow(fieldID), value);
-    }
-
     public Object getFieldValue(_Fields field) {
       switch (field) {
       case SUCCESS:
@@ -3565,21 +3934,17 @@ public class Hrana {
       throw new IllegalStateException();
     }
 
-    public Object getFieldValue(int fieldId) {
-      return getFieldValue(_Fields.findByThriftIdOrThrow(fieldId));
-    }
-
     /** Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise */
     public boolean isSet(_Fields field) {
+      if (field == null) {
+        throw new IllegalArgumentException();
+      }
+
       switch (field) {
       case SUCCESS:
         return isSetSuccess();
       }
       throw new IllegalStateException();
-    }
-
-    public boolean isSet(int fieldID) {
-      return isSet(_Fields.findByThriftIdOrThrow(fieldID));
     }
 
     @Override
@@ -3620,15 +3985,21 @@ public class Hrana {
       int lastComparison = 0;
       Clear_result typedOther = (Clear_result)other;
 
-      lastComparison = Boolean.valueOf(isSetSuccess()).compareTo(isSetSuccess());
+      lastComparison = Boolean.valueOf(isSetSuccess()).compareTo(typedOther.isSetSuccess());
       if (lastComparison != 0) {
         return lastComparison;
       }
-      lastComparison = TBaseHelper.compareTo(success, typedOther.success);
-      if (lastComparison != 0) {
-        return lastComparison;
+      if (isSetSuccess()) {
+        lastComparison = TBaseHelper.compareTo(this.success, typedOther.success);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
       }
       return 0;
+    }
+
+    public _Fields fieldForId(int fieldId) {
+      return _Fields.findByThriftId(fieldId);
     }
 
     public void read(TProtocol iprot) throws TException {
