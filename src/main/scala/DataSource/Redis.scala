@@ -1,9 +1,10 @@
 package hrana.DataSource
+
 import scala.collection.immutable.HashMap
 import com.redis
 import com.redis._
 
-class NoSuchKeyException extends Exception
+class NoSuchRedisKey extends Exception
 {}
 
 class RedisDataSource(h: Host, key: String) extends DataSource
@@ -15,7 +16,7 @@ class RedisDataSource(h: Host, key: String) extends DataSource
 		val res = redis_.hgetall(key_).getOrElse(null)
 		if(res == null)
 		{
-			throw new NoSuchKeyException
+			throw new NoSuchRedisKey
 		}
 		res
 	}

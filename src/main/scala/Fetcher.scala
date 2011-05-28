@@ -30,8 +30,16 @@ class Fetcher(source : DataSource, interval : Long) extends Actor
             var cur_time = Fetcher.time
             if( (cur_time - last_fetched_time) > interval )
             {
-                last_fetched = source.GetAll
-                last_fetched_time = cur_time
+				try
+				{
+					last_fetched = source.GetAll
+					last_fetched_time = cur_time
+				}
+				catch
+				{
+					case e: NoSuchRedisKey => LogActor ! "unable to get redis data"
+					case e: Exception => LogActor ! "generic exception: " + e
+				}
             }
             receive
             {

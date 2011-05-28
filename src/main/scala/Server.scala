@@ -43,8 +43,10 @@ object Server
             
             val data_source = new NullDataSource
             val refresh_frequency = 1000
+			
             val fetcher = new Fetcher(data_source, refresh_frequency)
             fetcher.start
+			
             val processor = new Hrana.Processor(new ServerImpl(fetcher))
             val server = new TNonblockingServer(new Args(serverTransport).processor(processor))
             LogActor ! "Hrana serving on port " + port
